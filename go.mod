@@ -1,4 +1,4 @@
-module xk6-output-distributed-statsd
+module github.com/team-aglr/xk6-output-distributed-statsd
 
 go 1.19
 
