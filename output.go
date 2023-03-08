@@ -1,4 +1,4 @@
-package statsd
+package distributed_statsd
 
 import (
 	"fmt"
@@ -10,6 +10,10 @@ import (
 	"go.k6.io/k6/metrics"
 	"go.k6.io/k6/output"
 )
+
+func init() {
+	output.RegisterExtension("distributed-statsd", New)
+}
 
 // New creates a new statsd connector client
 func New(params output.Params) (output.Output, error) {
@@ -55,7 +59,7 @@ func (o *Output) dispatch(entry metrics.Sample) error {
 	case metrics.Trend:
 		return o.client.TimeInMilliseconds(entry.Metric.Name, entry.Value, tagList, 1)
 	case metrics.Gauge:
-		return o.client.Gauge(entry.Metric.Name, entry.Value, tagList, 1)
+		return o.client.Gauge(o.config.GaugeNamespace.String+entry.Metric.Name, entry.Value, tagList, 1)
 	case metrics.Rate:
 		if check, ok := entry.Tags.Get("check"); ok {
 			return o.client.Count(

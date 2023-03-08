@@ -1,4 +1,4 @@
-package statsd
+package distributed_statsd
 
 import (
 	"encoding/json"
@@ -13,12 +13,13 @@ import (
 
 // config defines the StatsD configuration.
 type config struct {
-	Addr         null.String         `json:"addr,omitempty" envconfig:"K6_STATSD_ADDR"`
-	BufferSize   null.Int            `json:"bufferSize,omitempty" envconfig:"K6_STATSD_BUFFER_SIZE"`
-	Namespace    null.String         `json:"namespace,omitempty" envconfig:"K6_STATSD_NAMESPACE"`
-	PushInterval types.NullDuration  `json:"pushInterval,omitempty" envconfig:"K6_STATSD_PUSH_INTERVAL"`
-	TagBlocklist metrics.EnabledTags `json:"tagBlocklist,omitempty" envconfig:"K6_STATSD_TAG_BLOCKLIST"`
-	EnableTags   null.Bool           `json:"enableTags,omitempty" envconfig:"K6_STATSD_ENABLE_TAGS"`
+	Addr           null.String         `json:"addr,omitempty" envconfig:"K6_STATSD_ADDR"`
+	BufferSize     null.Int            `json:"bufferSize,omitempty" envconfig:"K6_STATSD_BUFFER_SIZE"`
+	Namespace      null.String         `json:"namespace,omitempty" envconfig:"K6_STATSD_NAMESPACE"`
+	PushInterval   types.NullDuration  `json:"pushInterval,omitempty" envconfig:"K6_STATSD_PUSH_INTERVAL"`
+	TagBlocklist   metrics.EnabledTags `json:"tagBlocklist,omitempty" envconfig:"K6_STATSD_TAG_BLOCKLIST"`
+	EnableTags     null.Bool           `json:"enableTags,omitempty" envconfig:"K6_STATSD_ENABLE_TAGS"`
+	GaugeNamespace null.String         `json:"gaugeNamespace,omitempty" envconfig:"K6_STATSD_GAUGE_NAMESPACE"`
 }
 
 func processTags(t metrics.EnabledTags, tags map[string]string) []string {
@@ -51,6 +52,9 @@ func (c config) Apply(cfg config) config {
 	if cfg.EnableTags.Valid {
 		c.EnableTags = cfg.EnableTags
 	}
+	if cfg.GaugeNamespace.Valid {
+		c.GaugeNamespace = cfg.GaugeNamespace
+	}
 
 	return c
 }
@@ -58,12 +62,13 @@ func (c config) Apply(cfg config) config {
 // newConfig creates a new Config instance with default values for some fields.
 func newConfig() config {
 	return config{
-		Addr:         null.NewString("localhost:8125", false),
-		BufferSize:   null.NewInt(20, false),
-		Namespace:    null.NewString("k6.", false),
-		PushInterval: types.NewNullDuration(1*time.Second, false),
-		TagBlocklist: metrics.SystemTagSet(metrics.TagVU | metrics.TagIter | metrics.TagURL).Map(),
-		EnableTags:   null.NewBool(false, false),
+		Addr:           null.NewString("localhost:8125", false),
+		BufferSize:     null.NewInt(20, false),
+		Namespace:      null.NewString("k6.", false),
+		PushInterval:   types.NewNullDuration(1*time.Second, false),
+		TagBlocklist:   metrics.SystemTagSet(metrics.TagVU | metrics.TagIter | metrics.TagURL).Map(),
+		EnableTags:     null.NewBool(false, false),
+		GaugeNamespace: null.NewString("", false),
 	}
 }
 

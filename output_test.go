@@ -1,4 +1,4 @@
-package statsd
+package distributed_statsd
 
 import (
 	"encoding/json"
